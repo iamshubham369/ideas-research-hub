@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antler NEXT100 — Insight Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --surface: #121214;
+            --surface-hover: #1a1a1c;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --text-dim: #71717a;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --font-sans: 'Inter', sans-serif;
+            --font-display: 'Outfit', sans-serif;
+            --shadow: 0 4px 20px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+
+        .header {
+            margin-bottom: 2.5rem;
+        }
+
+        .header h2 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to bottom right, #fff 40%, #71717a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+        }
+
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-val {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .stat::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at top right, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 0.5rem;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 30px;
+            width: fit-content;
+            margin-bottom: 2.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.6rem 1.25rem;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-muted);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab.active {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        .tab:hover:not(.active) {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
+            background: var(--surface-hover);
+        }
+
+        .card.expanded {
+            border-color: var(--accent);
+            background: var(--surface-hover);
+            box-shadow: 0 0 0 1px var(--accent), 0 12px 30px -10px rgba(99, 102, 241, 0.3);
+        }
+
+        .card-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-num {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #fff;
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        .chevron {
+            font-size: 14px;
+            color: var(--text-dim);
+            transition: transform 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .expanded .chevron {
+            transform: rotate(180deg);
+            color: var(--accent);
+        }
+
+        .signal-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .signal-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .signal-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .bars {
+            display: flex;
+            gap: 3px;
+        }
+
+        .bar {
+            height: 4px;
+            width: 12px;
+            border-radius: 2px;
+        }
+
+        .sector-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .detail.open {
+            max-height: 600px;
+        }
+
+        .detail-inner {
+            padding-top: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .detail-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .detail-text {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .ask-btn {
+            margin-top: 1.5rem;
+            width: 100%;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0.8rem;
+            border-radius: var(--radius-md);
+            background: #fff;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .ask-btn:hover {
+            background: #e4e4e7;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1.5rem 1rem;
+            }
+
+            .header h2 {
+                font-size: 1.8rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-bar {
+                overflow-x: auto;
+                max-width: 100%;
+                padding: 4px 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header" id="top">
+        <h2>Antler NEXT100</h2>
+        <p>An interactive intelligence explorer for future-defining startup ideas. Filter by sector and deep-dive into
+            market signals.</p>
+    </div>
+
+    <div class="summary-row" id="stats-container">
+        <div class="stat">
+            <div class="stat-label">Total ideas</div>
+            <div class="stat-val">100</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Sectors</div>
+            <div class="stat-val">7</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">High-signal ideas</div>
+            <div class="stat-val">31</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Deep-tech plays</div>
+            <div class="stat-val">18</div>
+        </div>
+    </div>
+
+    <div class="tab-bar" id="tabs"></div>
+    <div class="grid" id="grid"></div>
+
+    <script>
+        const SECTORS = [
+            { id: "all", label: "All Sectors" },
+            { id: "ai", label: "AI & SaaS" },
+            { id: "fin", label: "Fintech" },
+            { id: "mfg", label: "Manufacturing" },
+            { id: "climate", label: "Climate" },
+            { id: "health", label: "Health" },
+            { id: "d2c", label: "Consumer / D2C" },
+            { id: "soc", label: "Future of Work" },
+        ];
+
+        const SECTOR_THEMES = {
+            ai: { color: "#818cf8", bg: "rgba(129, 140, 248, 0.1)" },
+            fin: { color: "#34d399", bg: "rgba(52, 211, 153, 0.1)" },
+            mfg: { color: "#fbbf24", bg: "rgba(251, 191, 36, 0.1)" },
+            climate: { color: "#38bdf8", bg: "rgba(56, 189, 248, 0.1)" },
+            health: { color: "#f87171", bg: "rgba(248, 113, 113, 0.1)" },
+            d2c: { color: "#f472b6", bg: "rgba(244, 114, 182, 0.1)" },
+            soc: { color: "#a1a1aa", bg: "rgba(161, 161, 170, 0.1)" }
+        };
+
+        const IDEAS = [
+            // AI/SaaS
+            { id: 1, sec: "ai", title: "Multilingual AI for public services", signal: 4, scope: "High demand as govts digitise — ASHA workers, PDS, MNREGS. Bharat languages AI gap is massive.", risks: ["Govt procurement cycles", "Data privacy in sensitive sectors"], tags: ["GovTech", "NLP", "Bharat"], why: "Every public scheme touchpoint is broken for non-English speakers." },
+            { id: 2, sec: "ai", title: "AI agents for business workflows", signal: 5, scope: "Agentic AI is the defining wave of 2024–28. Automation of multi-step ops in mid-market India is virtually untouched.", risks: ["Integration complexity", "Model reliability at scale"], tags: ["Agentic AI", "SaaS", "Automation"], why: "90% of Indian businesses still run on WhatsApp + Excel." },
+            { id: 3, sec: "ai", title: "AI copilots for SMEs", signal: 5, scope: "100M+ SMEs with zero digital assistance. Vertical copilots (CA, kirana, textile trader) have defensible moats.", risks: ["Low willingness to pay", "Thin margins"], tags: ["SME", "Copilot", "Vernacular"], why: "Same TAM as QuickBooks in India, but AI-native from day 1." },
+            { id: 4, sec: "ai", title: "Vertical AI SaaS", signal: 5, scope: "Legal, logistics, pharma, real estate verticals are underserved. Narrow LLMs trained on domain data outperform GPT wrappers.", risks: ["Niche TAM", "Sales cycles"], tags: ["Vertical SaaS", "Domain AI"], why: "Incumbents (Tally, Vyapar) can't pivot fast enough." },
+            { id: 5, sec: "ai", title: "AI infra for model deployment", signal: 4, scope: "As Indian AI startups scale, local MLOps/model-serving infra will be needed for data-residency compliance.", risks: ["Dominated by AWS/GCP", "Capital intensive"], tags: ["MLOps", "Infrastructure"], why: "DPDP Act creates regulatory moat for local infra." },
+            { id: 6, sec: "ai", title: "GPU-as-a-service platforms", signal: 3, scope: "Compute demand will 10x by 2027. Aggregating idle GPU capacity in India is an arbitrage opportunity.", risks: ["Hardware capex", "NVIDIA dependency"], tags: ["Cloud", "GPU", "Infra"], why: "Government's INR 10K Cr AI compute mission creates tailwinds." },
+            { id: 7, sec: "ai", title: "AI-powered coding assistants (India-focused)", signal: 3, scope: "India has 5M+ developers. Vernacular + Indian codebase context is a real differentiator over GitHub Copilot.", risks: ["GitHub Copilot dominance", "Commoditisation"], tags: ["Dev Tools", "Coding", "SaaS"], why: "Tier 2 developer ecosystem is exploding post-remote work." },
+            { id: 8, sec: "ai", title: "AI customer support automation", signal: 4, scope: "Call centres are India's export; AI automation will displace but also create new value at the enterprise layer.", risks: ["Enterprise sales cycles", "Integration fatigue"], tags: ["CX", "Automation", "SaaS"], why: "$10B+ BPO sector facing disruption — first movers win." },
+            { id: 9, sec: "ai", title: "AI-based fraud detection", signal: 4, scope: "UPI fraud, insurance fraud, credit fraud are exploding. Real-time ML models on transaction data are table stakes for fintech.", risks: ["Data access", "Regulatory complexity"], tags: ["Fintech", "Security", "ML"], why: "RBI mandates are forcing every NBFC to upgrade fraud stacks." },
+            { id: 10, sec: "ai", title: "AI for legal automation", signal: 4, scope: "240K+ law firms, 1.5M lawyers, almost zero tech adoption. Document review, contract analysis, court scheduling are ripe.", risks: ["Bar Council regulations", "Trust deficit"], tags: ["LegalTech", "NLP", "B2B"], why: "India's backlog of 50M+ court cases is a systemic crisis." },
+            { id: 11, sec: "ai", title: "AI-based healthcare diagnostics", signal: 5, scope: "Radiology AI, pathology AI, and triage AI for rural primary care centres. TB, diabetic retinopathy, cervical cancer screening.", risks: ["CDSCO regulation", "Liability"], tags: ["HealthTech", "Diagnostics", "AI"], why: "India has 1 doctor per 1800 patients — AI is the only scale lever." },
+            { id: 12, sec: "ai", title: "AI tutors for education", signal: 4, scope: "Personalised learning after the EdTech bust. Kota fatigue, NEP 2020, and CUET create demand for adaptive tutoring.", risks: ["Low ARPU", "WhiteLabel competition"], tags: ["EdTech", "Personalisation", "Bharat"], why: "NEP mandates personalised learning — nobody is delivering it." },
+            { id: 13, sec: "ai", title: "AI-based hiring platforms", signal: 3, scope: "JD-to-offer pipeline automation for high-volume blue and grey collar hiring. Screening, proctoring, assessments.", risks: ["Bias liability", "Incumbent ATS vendors"], tags: ["HRTech", "Recruitment", "AI"], why: "India adds 12M workers/year to the workforce." },
+            { id: 14, sec: "ai", title: "AI content creation tools (regional)", signal: 4, scope: "22 official languages, 500M+ regional internet users. AI dubbing, translation, and creation tools for Bharat-native content.", risks: ["Low CPM", "Piracy"], tags: ["Media", "Vernacular", "Creative AI"], why: "YouTube India's fastest growing content is regional." },
+            { id: 15, sec: "ai", title: "Voice AI for Bharat users", signal: 5, scope: "60%+ of India's internet users are more comfortable speaking than typing. Voice-first UX unlocks 500M new users.", risks: ["Dialect diversity", "Hardware fragmentation"], tags: ["Voice AI", "Bharat", "Accessibility"], why: "Smartphone users in Tier 3+ India literally do not type." },
+            { id: 16, sec: "ai", title: "AI-first CRM tools", signal: 3, scope: "Salesforce is too complex and expensive for Indian SMBs. Lightweight AI CRM with WhatsApp integration is the wedge.", risks: ["Commodity CRM space", "Price competition"], tags: ["CRM", "SMB", "SaaS"], why: "WhatsApp Business has 500M users — CRM lives there now." },
+            { id: 17, sec: "ai", title: "AI-powered analytics for SMBs", signal: 3, scope: "Democratising data insights for businesses that run on intuition. Natural-language querying of business data.", risks: ["Data quality", "Switching costs"], tags: ["Analytics", "SMB", "NLP"], why: "BI tools are built for data teams that SMBs don't have." },
+            { id: 18, sec: "ai", title: "Low-bandwidth AI systems", signal: 4, scope: "Critical for MSME-heavy, rural-first India. Lightweight models, edge inference, offline-capable AI apps.", risks: ["Technical complexity", "Narrow moat"], tags: ["Edge AI", "Bharat", "Infrastructure"], why: "40% of India still has unreliable connectivity." },
+            { id: 19, sec: "ai", title: "AI infra for government use", signal: 3, scope: "State govts are mandated to digitise. Secure, on-prem AI infra for NIC, state portals, and welfare schemes.", risks: ["Long sales cycles", "Political risk"], tags: ["GovTech", "Infrastructure", "Compliance"], why: "PM Gati Shakti and Digital India are multi-billion mandates." },
+            { id: 20, sec: "ai", title: "Synthetic data generation platforms", signal: 3, scope: "Data scarcity is the #1 bottleneck for Indian AI. Synthetic data for healthcare, finance, and autonomous systems.", risks: ["Regulatory grey area", "Quality validation"], tags: ["AI Infrastructure", "Data", "Privacy"], why: "DPDP Act restricts real data use — synthetic data becomes essential." },
+            // Fintech
+            { id: 21, sec: "fin", title: "DPI-as-a-service platforms", signal: 5, scope: "India Stack (UPI, ONDC, Account Aggregator, ABHA) is being exported globally. Platforms that wrap DPI for developers are valuable.", risks: ["Dependency on NPCI", "Policy changes"], tags: ["DPI", "India Stack", "B2B"], why: "India's DPI playbook is being replicated in 50+ countries." },
+            { id: 22, sec: "fin", title: "ONDC enablement tools", signal: 4, scope: "ONDC has 8M+ daily orders. Seller onboarding, logistics, catalogue management, and buyer-side apps are all open.", risks: ["ONDC ecosystem maturity", "Amazon counter-moves"], tags: ["ONDC", "Commerce", "Enablement"], why: "ONDC is government-backed and structurally disruptive to Amazon/Flipkart." },
+            { id: 23, sec: "fin", title: "Embedded finance for SMBs", signal: 5, scope: "Lending, insurance, and payments embedded into accounting, ERP, and vertical SaaS. $300B+ credit gap in Indian SMBs.", risks: ["NPA risk", "RBI compliance"], tags: ["Embedded Finance", "SMB", "Lending"], why: "Every SME SaaS is a distribution channel for financial products." },
+            { id: 24, sec: "fin", title: "Cross-border payment solutions", signal: 4, scope: "India receives $125B in remittances. GIFT City, NPCI International, and UPI-global corridors create new rails.", risks: ["Forex regulation", "Hawala competition"], tags: ["Remittances", "Cross-border", "Fintech"], why: "India–UAE–US–UK corridors are still expensive and slow." },
+            { id: 25, sec: "fin", title: "Credit scoring for thin-file users", signal: 5, scope: "600M Indians have no credit history. Alternative data (telco, UPI, GST, social) can unlock the next credit wave.", risks: ["Model bias", "RBI oversight"], tags: ["Credit", "Alternative Data", "Inclusion"], why: "NBFC growth is constrained by inability to underwrite new-to-credit users." },
+            { id: 26, sec: "fin", title: "Rural fintech platforms", signal: 4, scope: "BC-network enablement, kisan credit, crop insurance, and MSME lending for India 2 & 3. JLG model + digital = scale.", risks: ["Operational complexity", "Last-mile trust"], tags: ["Rural", "Inclusion", "Fintech"], why: "PM Kisan, FPOs, and SHG networks are underdigitised distribution channels." },
+            { id: 27, sec: "fin", title: "Micro-investment platforms", signal: 3, scope: "SIP penetration is <5% in Tier 2+. Micro-SIPs (₹100/week), gold savings, and RD alternatives for mass market.", risks: ["SEBI compliance", "Low ticket size"], tags: ["WealthTech", "Micro-SIP", "Bharat"], why: "Jandhan accounts hold ₹2L Cr idle — savings products are the opportunity." },
+            { id: 28, sec: "fin", title: "Insurance for underserved segments", signal: 4, scope: "Gig workers, farmers, micro-enterprises. Usage-based, parametric, and bundled insurance via distribution platforms.", risks: ["Claims fraud", "Regulatory approvals"], tags: ["InsurTech", "Gig", "Rural"], why: "India's insurance penetration at 4% vs 12% global average." },
+            { id: 29, sec: "fin", title: "Wealth tech for middle-class India", signal: 4, scope: "120M demat accounts, rising equity culture post-COVID. Robo-advisory, goal-based planning, NPS, and alternates.", risks: ["SEBI regulation", "Zero-commission race"], tags: ["WealthTech", "Retail Investors", "SaaS"], why: "Middle India went from FDs to stocks in 3 years — advice is missing." },
+            { id: 30, sec: "fin", title: "SME lending infra", signal: 5, scope: "Co-lending, FLDG, and tech-enabled underwriting stacks for NBFCs and banks lending to MSMEs.", risks: ["NPA cycles", "RBI tightening"], tags: ["LendingTech", "MSME", "B2B"], why: "RBI's co-lending framework is unlocking massive origination opportunities." },
+            { id: 31, sec: "fin", title: "UPI-based global payments", signal: 4, scope: "NPCI International is expanding UPI to 20+ countries. Acceptance infrastructure and cross-border conversion.", risks: ["Geopolitical risks", "Interoperability standards"], tags: ["UPI", "Global", "Payments"], why: "India's payment rails are the world's best — exporting them is the next frontier." },
+            { id: 32, sec: "fin", title: "Financial literacy platforms", signal: 2, scope: "Large social need, difficult monetisation. Content-to-product funnels work better than pure education plays.", risks: ["Monetisation", "Competition from SEBI-mandated content"], tags: ["FinLit", "EdTech", "Consumer"], why: "SEBI mandates investor education — regulatory push creates tailwind." },
+            { id: 33, sec: "fin", title: "BNPL for Bharat", signal: 3, scope: "Credit at checkout for underserved segments, especially offline retail. BUT RBI's FLDG caps have tightened this space.", risks: ["RBI regulation", "Rising NPAs"], tags: ["BNPL", "Credit", "Bharat"], why: "Post-RBI recalibration, sachet credit for genuine need (healthcare, education) is defensible." },
+            { id: 34, sec: "fin", title: "API stack for fintech builders", signal: 4, scope: "Banking-as-a-service, payment APIs, and compliance-as-a-service for the next wave of fintech startups.", risks: ["Incumbent banks", "RBI sandbox limitations"], tags: ["BaaS", "Developer Tools", "API"], why: "Every startup now needs embedded finance — infrastructure providers win." },
+            { id: 35, sec: "fin", title: "RegTech (compliance automation)", signal: 4, scope: "DPDP Act, GST, RBI guidelines, SEBI mandates — compliance complexity is exploding. Automation tools have strong B2B demand.", risks: ["Regulatory change", "Enterprise sales"], tags: ["RegTech", "Compliance", "B2B"], why: "India passed 40+ major regulations in the last 3 years — compliance is a crisis." },
+            // Manufacturing
+            { id: 36, sec: "mfg", title: "China+1 manufacturing platforms", signal: 5, scope: "$300B in manufacturing shifting from China. India positioned for electronics, chemicals, textiles, and auto components.", risks: ["Infrastructure gaps", "Skilled labour"], tags: ["Manufacturing", "PLI", "Export"], why: "Apple, Samsung, Tesla are actively diversifying — India is the top destination." },
+            { id: 37, sec: "mfg", title: "Contract manufacturing marketplaces", signal: 4, scope: "Connecting global brands to Indian job shops and factories. Verified supplier discovery with quality and compliance assurance.", risks: ["Trust and verification", "Fragmented supply base"], tags: ["Marketplace", "B2B", "Manufacturing"], why: "Most Indian factories are invisible to global buyers." },
+            { id: 38, sec: "mfg", title: "Supply chain digitization tools", signal: 4, scope: "Track-and-trace, supplier collaboration, demand forecasting for mid-market manufacturers. GST and e-way bill integration.", risks: ["Change management", "Legacy ERP integration"], tags: ["Supply Chain", "SaaS", "Digitisation"], why: "Only 15% of Indian manufacturers have any supply chain visibility." },
+            { id: 39, sec: "mfg", title: "Logistics optimization platforms", signal: 4, scope: "AI-powered route planning, load optimisation, and multi-modal logistics for India's complex geography.", risks: ["Hyperlocal competition", "Shiprocket dominance"], tags: ["Logistics", "AI", "B2B"], why: "India's logistics cost at 14% of GDP vs 8% global average — massive inefficiency." },
+            { id: 40, sec: "mfg", title: "Warehouse automation systems", signal: 3, scope: "Growing e-commerce and quick commerce demand is forcing warehouse modernisation. AMRs and WMS for Indian conditions.", risks: ["Capital intensive", "Labour replacement politics"], tags: ["Robotics", "Warehousing", "Automation"], why: "Quick commerce's 10-min delivery promise cannot be met without automation." },
+            { id: 41, sec: "mfg", title: "B2B procurement platforms", signal: 4, scope: "Digitising the ₹100L Cr B2B trade — raw materials, MRO, packaging. GST compliance, credit, and discovery.", risks: ["Working capital", "Category breadth"], tags: ["B2B Commerce", "Procurement", "SaaS"], why: "Udaan proved the model — verticalized versions are the next wave." },
+            { id: 42, sec: "mfg", title: "Export enablement platforms", signal: 4, scope: "Documentation, compliance, logistics, and payments for India's 500K+ MSMEs trying to export. DGFT, FEMA, and customs.", risks: ["Government policy dependency", "Fragmented logistics"], tags: ["Export", "Compliance", "MSME"], why: "India's export target is $2T by 2030 — MSMEs are the bottleneck." },
+            { id: 43, sec: "mfg", title: "Quality control tech for factories", signal: 3, scope: "Computer vision QC for textiles, pharma packaging, electronics assembly. Reduce human error and rejections.", risks: ["Hardware + software integration", "Factory adoption"], tags: ["Computer Vision", "QC", "Manufacturing"], why: "Quality failures cost Indian exporters $10B+ annually in returns." },
+            { id: 44, sec: "mfg", title: "Smart inventory systems", signal: 3, scope: "IoT-enabled inventory tracking for factories and distributors. RFID, barcode, and camera-based systems.", risks: ["Hardware costs", "Connectivity in factories"], tags: ["IoT", "Inventory", "SaaS"], why: "Dead inventory is the #1 working capital drain for Indian MSMEs." },
+            { id: 45, sec: "mfg", title: "Cold chain logistics startups", signal: 4, scope: "Pharma, fresh food, and vaccines need cold chain. India has 60% post-harvest loss — cold chain is critical infrastructure.", risks: ["Capital intensive", "Power reliability"], tags: ["Cold Chain", "Food", "Pharma"], why: "India wastes ₹1.5L Cr of food annually due to cold chain gaps." },
+            { id: 46, sec: "mfg", title: "Agri supply chain platforms", signal: 4, scope: "FPO enablement, mandi digitisation, and farm-to-fork traceability. ONDC for agri is an emerging opportunity.", risks: ["Fragmented farmers", "Mandi Act complexity"], tags: ["AgriTech", "Supply Chain", "FPO"], why: "The government is actively backing FPOs — 10,000 FPO scheme is live." },
+            { id: 47, sec: "mfg", title: "Local manufacturing brands (D2C)", signal: 3, scope: "PLI-driven manufacturing creates white-label and D2C opportunities in electronics, appliances, and FMCG.", risks: ["Brand building costs", "Amazon competition"], tags: ["D2C", "Manufacturing", "Brand"], why: "Consumer preference for 'Made in India' is at an all-time high." },
+            { id: 48, sec: "mfg", title: "Industrial robotics for SMEs", signal: 3, scope: "Affordable cobots and automation cells for small job shops. Amortised robotics-as-a-service model.", risks: ["High upfront cost", "Technical support"], tags: ["Robotics", "SME", "Automation"], why: "China+1 shift demands quality at scale that manual labour alone can't deliver." },
+            { id: 49, sec: "mfg", title: "Packaging innovation startups", signal: 3, scope: "Sustainable packaging, smart packaging, and cost-effective alternatives for food & pharma export compliance.", risks: ["Material science complexity", "Price sensitivity"], tags: ["Packaging", "Sustainability", "Export"], why: "EU packaging regulations are forcing Indian exporters to upgrade." },
+            { id: 50, sec: "mfg", title: "Circular supply chain systems", signal: 3, scope: "EPR compliance, take-back logistics, and reverse supply chain for electronics, plastics, and batteries.", risks: ["Infrastructure gaps", "Informal sector competition"], tags: ["Circular Economy", "EPR", "Sustainability"], why: "India's EPR mandate is now legally binding — non-compliance means factory shutdown." },
+            // Climate
+            { id: 51, sec: "climate", title: "Lithium-ion battery recycling", signal: 5, scope: "India has 0 at-scale Li-ion recyclers. EV fleet will hit 100M by 2030 — recycling is mandatory under BESS policy.", risks: ["Technical complexity", "Import of feedstock"], tags: ["Battery", "Recycling", "EV"], why: "Battery recycling is a $15B market waiting to happen in India." },
+            { id: 52, sec: "climate", title: "EV infrastructure platforms", signal: 4, scope: "Charging infra, fleet management, battery swapping, and EV financing for 2W, 3W, and commercial vehicles.", risks: ["Electricity grid reliability", "Hardware margins"], tags: ["EV", "Charging", "Mobility"], why: "FAME III policy is pushing aggressive EV adoption mandates." },
+            { id: 53, sec: "climate", title: "Carbon accounting software", signal: 4, scope: "BRSR Core mandatory for top 1000 listed companies. Scope 1/2/3 emissions tracking, reporting, and verification.", risks: ["Voluntary market maturity", "Greenwashing liability"], tags: ["Carbon", "Compliance", "SaaS"], why: "SEBI's BRSR mandate is the first binding corporate carbon reporting rule in India." },
+            { id: 54, sec: "climate", title: "Climate fintech (carbon credits)", signal: 3, scope: "Voluntary carbon market, nature-based solutions, and CDR financing. India is a major offset originator.", risks: ["Offset integrity concerns", "Market volatility"], tags: ["Carbon Credits", "Finance", "Climate"], why: "India's forests and soil represent billions in carbon credit potential." },
+            { id: 55, sec: "climate", title: "Renewable energy marketplaces", signal: 4, scope: "C&I (commercial & industrial) renewable energy procurement — Group Captive, REC, and open access facilitation.", risks: ["State DISCOM resistance", "Regulatory complexity"], tags: ["Renewable", "Energy", "B2B"], why: "250GW RE target by 2030 needs a transaction layer to move corporate buyers." },
+            { id: 56, sec: "climate", title: "Waste management tech", signal: 4, scope: "SWM Rules compliance, wet/dry waste digitisation, and EPR platform for brands. ULB digitisation is a huge opportunity.", risks: ["Municipal procurement", "Informal waste workers"], tags: ["Waste", "GovTech", "EPR"], why: "India generates 62M tonnes of solid waste annually — almost none is formally processed." },
+            { id: 57, sec: "climate", title: "Water management systems", signal: 4, scope: "Industrial water recycling, groundwater monitoring, and Jal Jeevan Mission tech. Water stress is India's #1 climate risk.", risks: ["Long project cycles", "Government dependency"], tags: ["Water", "IoT", "Climate"], why: "21 Indian cities will run out of groundwater by 2030." },
+            { id: 58, sec: "climate", title: "Sustainable construction tech", signal: 3, scope: "Fly-ash bricks, bamboo composites, and green cement alternatives for India's massive construction boom.", risks: ["Material adoption inertia", "Certification costs"], tags: ["Construction", "Sustainability", "Materials"], why: "India will add 1B sq ft of built space annually — materials matter enormously." },
+            { id: 59, sec: "climate", title: "Green hydrogen ecosystem", signal: 3, scope: "NGHM targets 5 MMT by 2030. Electrolyser manufacturing, offtake platforms, and green ammonia logistics.", risks: ["Cost of green H2", "Infrastructure timelines"], tags: ["Green Hydrogen", "Energy", "Deep Tech"], why: "India's solar cost advantage makes green hydrogen globally competitive by 2027." },
+            { id: 60, sec: "climate", title: "Energy storage solutions", signal: 4, scope: "Grid-scale BESS, residential storage, and DG replacement for C&I. PLI for advanced chemistry cells is live.", risks: ["Battery cost", "Supply chain risk"], tags: ["BESS", "Energy Storage", "Climate"], why: "Solar without storage is intermittent — storage is the missing piece of India's RE transition." },
+            // Health
+            { id: 61, sec: "health", title: "Preventive healthcare platforms", signal: 4, scope: "Annual health checks, biomarker tracking, and personalised lifestyle intervention. Employer wellness + D2C.", risks: ["Low urgency perception", "High CAC"], tags: ["Preventive", "Wellness", "D2C"], why: "India's NCD burden (diabetes, hypertension) is at crisis scale — prevention is cheaper." },
+            { id: 62, sec: "health", title: "Full-stack digital hospitals", signal: 4, scope: "Integrated OPD, diagnostics, pharmacy, and follow-up — all digital. Hybrid model for Tier 2 cities.", risks: ["Regulation", "Capital intensity"], tags: ["Hospital", "Digital Health", "Hybrid"], why: "Tier 2 cities have no good hospital options — but have rising incomes." },
+            { id: 63, sec: "health", title: "Senior care ecosystems", signal: 4, scope: "Assisted living, home care, and tech-enabled longevity services for India's 140M+ seniors by 2030.", risks: ["Trust and quality control", "Family culture"], tags: ["ElderCare", "Senior", "D2C"], why: "India's elderly population will be larger than the US total population by 2030." },
+            { id: 64, sec: "health", title: "Home healthcare services", signal: 4, scope: "Nursing, physio, and diagnostics at home. Post-COVID normalisation of home care + ageing population.", risks: ["Quality standardisation", "Last-mile ops"], tags: ["Home Health", "Nursing", "B2C"], why: "Discharge post-hospitalisation is a $5B care gap in India." },
+            { id: 65, sec: "health", title: "Mental health platforms", signal: 4, scope: "Therapist marketplace, digital CBT, and employer mental health benefits. 200M Indians need mental health support.", risks: ["Stigma", "Therapist supply"], tags: ["Mental Health", "D2C", "Employer"], why: "Only 0.3 psychiatrists per 100,000 people in India — digital is the only path to scale." },
+            { id: 66, sec: "health", title: "Health financing platforms", signal: 4, scope: "Healthcare credit, insurance facilitation, and hospital cashless penetration for uninsured patients.", risks: ["Defaults in health credit", "Insurer partnerships"], tags: ["HealthFinance", "Insurance", "Credit"], why: "60% of healthcare spending in India is still out-of-pocket." },
+            { id: 67, sec: "health", title: "AI diagnostics tools", signal: 5, scope: "See idea #11. AI for pathology, radiology, and triage is one of the highest-signal health ideas globally.", risks: ["CDSCO", "Liability"], tags: ["AI", "Diagnostics", "MedTech"], why: "Duplicated from AI sector — cross-sectoral signla confirms strength of this idea." },
+            { id: 68, sec: "health", title: "Telemedicine for Bharat", signal: 4, scope: "Regional-language video consults, ABDM-linked health records, and rural PHC augmentation.", risks: ["Doctor connectivity", "Payment in rural areas"], tags: ["Telemedicine", "Bharat", "ABDM"], why: "e-Sanjeevani has proven demand — private players can build on top." },
+            { id: 69, sec: "health", title: "Chronic disease management", signal: 5, scope: "Diabetes, hypertension, COPD — long-tail, recurring revenue, massive patient pool. Connected devices + coaching.", risks: ["Patient adherence", "Insurance coverage"], tags: ["Chronic Care", "D2C", "Digital Health"], why: "India has 77M diabetics — the world's second-largest. Management tech is woefully inadequate." },
+            { id: 70, sec: "health", title: "Health data interoperability", signal: 3, scope: "ABDM-linked PHR apps, HL7 FHIR integration, and health data exchanges for providers and insurers.", risks: ["Adoption lag", "Privacy concerns"], tags: ["ABDM", "Health Data", "Interoperability"], why: "NHA's ABDM mandate is creating a health data stack — someone needs to build on it." },
+            { id: 71, sec: "health", title: "Fitness + health ecosystems", signal: 3, scope: "Connected fitness, gym-tech, and health coaching apps. Rising urban health awareness post-COVID.", risks: ["Cult Fit dominance", "Low retention"], tags: ["Fitness", "D2C", "Wellness"], why: "Urbanisation + rising incomes + post-COVID health awareness = sustained demand." },
+            { id: 72, sec: "health", title: "Women's health platforms", signal: 4, scope: "Femtech: menstrual health, PCOS, fertility, maternal care, and menopausal wellness. Massively underfunded.", risks: ["Taboo", "Low insurance coverage"], tags: ["FemTech", "Women", "Health"], why: "Half the population is underserved by existing healthcare — this is a structural gap." },
+            { id: 73, sec: "health", title: "Nutrition tech startups", signal: 3, scope: "Personalised nutrition, meal planning, and clinical nutrition for NCDs. DNA + microbiome-based plans.", risks: ["Low ARPU", "Science credibility"], tags: ["Nutrition", "Personalisation", "D2C"], why: "India's dual burden of malnutrition and obesity creates a huge addressable market." },
+            { id: 74, sec: "health", title: "Emergency response platforms", signal: 3, scope: "Ambulance aggregation, ER coordination, and first-responder networks. <10% of Indians can access emergency care in 60 min.", risks: ["Government coordination", "High ops complexity"], tags: ["Emergency", "HealthTech", "GovTech"], why: "India's emergency response is dysfunctional — this is a life-or-death infrastructure gap." },
+            { id: 75, sec: "health", title: "Personalized medicine platforms", signal: 3, scope: "Pharmacogenomics, precision oncology, and genomic screening for hereditary conditions.", risks: ["Regulatory pathway", "Cost of genomics"], tags: ["Genomics", "Precision Medicine", "DeepTech"], why: "GenomicsIndia is a government-backed mission — precision medicine is being mainstreamed." },
+            // D2C
+            { id: 76, sec: "d2c", title: "Pet care ecosystem", signal: 4, scope: "India's pet economy is growing 20% YoY. Premium food, vet-tech, grooming, and pet insurance.", risks: ["Niche TAM (still growing)", "Import dependency for premium food"], tags: ["PetTech", "D2C", "Consumer"], why: "Urban pet ownership doubled post-COVID — the Indian pet market is where the US was in 2000." },
+            { id: 77, sec: "d2c", title: "Regional D2C brands", signal: 4, scope: "Authentic regional food, fashion, and crafts brands targeting NRI diaspora and urban consumers.", risks: ["Scaling regional supply chains", "Discovery"], tags: ["D2C", "Regional", "Brand"], why: "Mamaearth-like growth stories await in regional categories that are currently fragmented." },
+            { id: 78, sec: "d2c", title: "Bharat-first marketplaces", signal: 4, scope: "Category-specific or geography-specific marketplaces for India 2 & 3. Vernacular + voice + credit.", risks: ["Amazon/Meesho competition", "Logistics in small towns"], tags: ["Bharat", "Marketplace", "Commerce"], why: "Meesho proved demand exists in Tier 3+ — verticalised versions are defensible." },
+            { id: 79, sec: "d2c", title: "Vernacular content platforms", signal: 3, scope: "Short video, audio, and podcast platforms for regional languages. Sharechat proved the market.", risks: ["Monetisation", "Competition from YouTube/Meta"], tags: ["Content", "Vernacular", "Media"], why: "500M+ Indians prefer consuming content in their mother tongue." },
+            { id: 80, sec: "d2c", title: "Social commerce platforms", signal: 3, scope: "Live commerce, influencer shops, and community group buying. Meesho reseller model evolution.", risks: ["Returns", "Trust in product quality"], tags: ["Social Commerce", "Creator", "D2C"], why: "China's social commerce market is $700B — India is 5 years behind." },
+            { id: 81, sec: "d2c", title: "Creator economy tools", signal: 4, scope: "Monetisation, fan management, and analytics for India's 80M+ content creators. Vernacular-first.", risks: ["Platform dependency", "Low ARPU per creator"], tags: ["Creator", "SaaS", "Monetisation"], why: "India has more content creators than most countries have internet users." },
+            { id: 82, sec: "d2c", title: "Gaming studios + infra", signal: 3, scope: "Mobile-first, India-specific game studios and esports platforms. Ludo King proved mass market viability.", risks: ["User acquisition costs", "Gambling regulation overlap"], tags: ["Gaming", "Mobile", "Consumer"], why: "India is the world's largest mobile gaming market by downloads." },
+            { id: 83, sec: "d2c", title: "Kids-focused brands", signal: 3, scope: "EdTech, toys, food, and digital media for children. Rising nuclear family spending on children.", risks: ["Parent gatekeeping", "COPPA-like regulation coming"], tags: ["Kids", "D2C", "EdTech"], why: "Indian parents are spending more on children per capita than ever before." },
+            { id: 84, sec: "d2c", title: "Affordable luxury brands", signal: 3, scope: "Accessible premium across fashion, jewellery, home decor. Aspirational middle India.", risks: ["Brand building is slow", "E-commerce margin pressure"], tags: ["Premium", "D2C", "Fashion"], why: "India's middle class is entering the aspirational consumption phase." },
+            { id: 85, sec: "d2c", title: "Quick commerce innovations", signal: 4, scope: "Dark store tech, demand forecasting, and category expansion beyond groceries. Q-commerce for medicines, electronics.", risks: ["Unit economics", "Zomato/Swiggy dominance"], tags: ["Q-Commerce", "Logistics", "Consumer"], why: "Blinkit and Zepto created the category — enabling tech and adjacencies remain open." },
+            { id: 86, sec: "d2c", title: "Subscription-based D2C", signal: 3, scope: "Recurring revenue for consumables — personal care, pet food, supplements, office supplies.", risks: ["Churn", "SKU proliferation"], tags: ["Subscription", "D2C", "Consumer"], why: "Subscriptions create predictable revenue in an otherwise volatile D2C market." },
+            { id: 87, sec: "d2c", title: "Hyperlocal services", signal: 3, scope: "On-demand home services, repair, laundry, and groceries for urban India. Urban Company showed the path.", risks: ["Supply quality", "Unit economics at scale"], tags: ["Hyperlocal", "Services", "Urban"], why: "Urban convenience market is growing faster than platform supply." },
+            { id: 88, sec: "d2c", title: "Rural e-commerce", signal: 4, scope: "Last-mile commerce, assisted purchase, and rural delivery networks for 600M+ rural Indians.", risks: ["Infrastructure", "Low ticket sizes"], tags: ["Rural", "E-commerce", "Bharat"], why: "Rural India's e-commerce penetration is <5% vs 40%+ urban." },
+            { id: 89, sec: "d2c", title: "Community-driven platforms", signal: 3, scope: "Interest-based communities, cooperative buying, and peer-to-peer commerce.", risks: ["Monetisation", "Moderation at scale"], tags: ["Community", "Social", "Commerce"], why: "Discord/Reddit showed the West — India's version is still unbuilt." },
+            { id: 90, sec: "d2c", title: "Digital identity for consumers", signal: 3, scope: "Aadhaar-linked digital wallets, KYC infrastructure, and identity-as-a-service for onboarding.", risks: ["UIDAI dependency", "Privacy concerns"], tags: ["Identity", "DPI", "KYC"], why: "DPDP Act mandates consent-based identity — new infra is needed." },
+            // Future of Work
+            { id: 91, sec: "soc", title: "Daycare marketplaces", signal: 4, scope: "Urban working parents — especially dual-income households — have zero organised daycare options. A huge gap.", risks: ["Trust and safety", "Licensing"], tags: ["Childcare", "FutureOfWork", "Consumer"], why: "Female workforce participation rises only when childcare is solved." },
+            { id: 92, sec: "soc", title: "Female workforce enablement", signal: 5, scope: "India's female LFPR at 24% vs 47% global average. Skilling, safety, childcare, and remote work infra.", risks: ["Social norms change is slow", "Government coordination needed"], tags: ["Women", "Workforce", "Social Impact"], why: "Closing the gender workforce gap adds $770B to India's GDP." },
+            { id: 93, sec: "soc", title: "Skill development platforms", signal: 4, scope: "PM Kaushal Vikas, NSDC framework, and industry-linked skilling for 10M+ youth entering the workforce annually.", risks: ["Placement rates", "Government program competition"], tags: ["Skilling", "EdTech", "Employment"], why: "India's demographic dividend becomes a liability without skills." },
+            { id: 94, sec: "soc", title: "Blue-collar job platforms", signal: 4, scope: "Hyperlocal hiring, background verification, and income smoothing for 400M+ blue-collar workers.", risks: ["Supply-demand mismatch", "Apna/WorkIndia competition"], tags: ["Blue Collar", "Jobs", "Bharat"], why: "India adds 1M workers to the blue-collar pool every month." },
+            { id: 95, sec: "soc", title: "Gig workforce infrastructure", signal: 4, scope: "Benefits, insurance, tax filing, and community for gig workers. IFSC gig worker code compliance.", risks: ["Regulatory definition of gig worker", "Aggregator resistance"], tags: ["Gig", "Workforce", "Insurance"], why: "60M gig workers have no social protection — a policy crisis waiting to happen." },
+            { id: 96, sec: "soc", title: "Remote work ecosystems", signal: 3, scope: "Tools, co-working spaces, and social infrastructure for India's distributed workforce.", risks: ["Return-to-office trend", "Commoditisation"], tags: ["Remote Work", "SaaS", "Productivity"], why: "Post-COVID, 30M+ Indians work remotely — the infra hasn't caught up." },
+            { id: 97, sec: "soc", title: "Elderly employment platforms", signal: 3, scope: "Skilled retirees (55–70) want to work. Fractional, advisory, and mentorship marketplaces for senior talent.", risks: ["Ageism", "Low digital adoption"], tags: ["Elder", "Employment", "Silver Economy"], why: "India's silver economy is projected to hit $700B by 2030." },
+            { id: 98, sec: "soc", title: "Education-to-employment pipelines", signal: 5, scope: "Bridging the degree-skills-job gap with apprenticeships, bootcamps, and outcome-based education.", risks: ["Employer trust", "Upfront cost for students"], tags: ["EdTech", "Jobs", "Skilling"], why: "India produces 1.5M engineers/year — 80% are not industry-ready." },
+            { id: 99, sec: "soc", title: "Civic tech platforms", signal: 3, scope: "RTI facilitation, local governance tools, and citizen-government interface simplification.", risks: ["Government adoption", "Monetisation"], tags: ["CivicTech", "GovTech", "Social Impact"], why: "Urban Local Bodies are mandated to digitise under Smart Cities — tools are needed." },
+            { id: 100, sec: "soc", title: "Smart city governance tools", signal: 3, scope: "IoT sensors, command centres, and integrated city dashboards for ULBs and smart city SPVs.", risks: ["Government procurement", "Integration complexity"], tags: ["Smart City", "IoT", "GovTech"], why: "Smart Cities Mission is a ₹2L Cr programme — the tech layer is being built now." },
+        ];
+
+        const SIGNAL_COLORS = ["", "#fb7185", "#facc15", "#fbbf24", "#34d399", "#818cf8"];
+        const SIGNAL_LABEL = ["", "Emerging", "Moderate", "Strong", "High", "Gold Tier"];
+
+        let activeSec = "all";
+        let openCard = null;
+
+        function renderTabs() {
+            const tabs = document.getElementById("tabs");
+            tabs.innerHTML = "";
+            SECTORS.forEach(s => {
+                const b = document.createElement("button");
+                b.className = "tab" + (s.id === activeSec ? " active" : "");
+                b.textContent = s.label;
+                b.onclick = () => {
+                    activeSec = s.id;
+                    openCard = null;
+                    renderGrid();
+                    renderTabs();
+                    window.scrollTo({ top: document.getElementById('tabs').offsetTop - 20, behavior: 'smooth' });
+                };
+                tabs.appendChild(b);
+            });
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById("grid");
+            grid.innerHTML = "";
+            const filtered = activeSec === "all" ? IDEAS : IDEAS.filter(i => i.sec === activeSec);
+
+            filtered.forEach(idea => {
+                const theme = SECTOR_THEMES[idea.sec];
+                const isOpen = openCard === idea.id;
+                const div = document.createElement("div");
+                div.className = "card" + (isOpen ? " expanded" : "");
+
+                div.innerHTML = `
+      <div class="card-head">
+        <span class="card-num">#${idea.id}</span>
+        <span class="card-title">${idea.title}</span>
+        <span class="chevron">↓</span>
+      </div>
+      
+      <div class="signal-container">
+        <div class="signal-bar">
+          <div class="bars">
+            ${[1, 2, 3, 4, 5].map(i => `
+              <div class="bar" style="background:${i <= idea.signal ? SIGNAL_COLORS[idea.signal] : 'rgba(255,255,255,0.1)'}"></div>
+            `).join("")}
+          </div>
+          <span class="signal-label" style="color:${SIGNAL_COLORS[idea.signal]}">${SIGNAL_LABEL[idea.signal]}</span>
+        </div>
+        <span class="sector-badge" style="background:${theme.bg}; color:${theme.color}">${SECTORS.find(s => s.id === idea.sec)?.label || ""}</span>
+      </div>
+
+      <div class="detail${isOpen ? " open" : ""}">
+        <div class="detail-inner">
+          <div class="detail-section">
+            <span class="detail-label">Strategy / Why Now</span>
+            <p class="detail-text">${idea.why}</p>
+          </div>
+          <div class="detail-section">
+            <span class="detail-label">Market Potential & Scope</span>
+            <p class="detail-text">${idea.scope}</p>
+          </div>
+          <div class="detail-section">
+            <span class="detail-label">Structural Risks</span>
+            <p class="detail-text">${idea.risks.join(" · ")}</p>
+          </div>
+          <div class="tag-row">${idea.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+          <button class="ask-btn">
+            Deep Dive Opportunity 
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+
+                div.onclick = (e) => {
+                    if (e.target.closest('.ask-btn')) {
+                        const sectorLabel = SECTORS.find(s => s.id === idea.sec)?.label || idea.sec;
+                        const basePrompt = `I want a 360-degree deep dive analysis into this startup idea: ${idea.title}
+
+Context:
+- Sector: ${sectorLabel}
+- Why Now: ${idea.why}
+- Market Potential: ${idea.scope}
+- Structural Risks: ${idea.risks.join(' · ')}
+
+Please provide:
+1. **Market Sizing (TAM/SAM/SOM)**: Provide estimated figures for the Total Addressable Market, Serviceable Addressable Market, and Serviceable Obtainable Market in the Indian context.
+2. **Competitive Landscape**: Audit both local incumbents and global benchmarks.
+3. **Comprehensive Factor Analysis**: Detail the key PESTEL (Political, Economic, Social, Technological, Environmental, Legal) and SWOT factors affecting this sector in India.
+4. **Revenue & Unit Economics**: 
+   - Breakdown of possible revenue streams.
+   - Analysis of projected unit economics (LTV, CAC, gross margins).
+5. **Global Benchmarking**: Identify the Top 10 leading countries in this sector. For each, explain:
+   - Specific innovations and work being done.
+   - Their current 'range' of success.
+   - How many years they are ahead of India.
+6. **90-Day MVP Roadmap**: A step-by-step technical and operational plan for building and testing the concept.
+7. **India Evolution Scenario**: Based on global trends, what is the 'possible case' for India over the next 5-10 years? What happens when India catches up?`;
+
+                        const encodedPrompt = encodeURIComponent(basePrompt);
+                        const chatGPTUrl = `https://chatgpt.com/?q=${encodedPrompt}`;
+                        
+                        window.open(chatGPTUrl, '_blank');
+                        return;
+                    }
+                    openCard = isOpen ? null : idea.id;
+                    renderGrid();
+                };
+
+                grid.appendChild(div);
+            });
+        }
+
+        renderTabs();
+        renderGrid();
+    </script>
+</body>
+
+</html>
